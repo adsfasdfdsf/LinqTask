@@ -66,9 +66,9 @@ class BusinessLogic
     public List<User> GetAllAuthors()
     {
         var query = from u in users
-                    join r in records on u equals r.Author
-                    select u;
-        return query.Distinct().ToList();
+            join r in records on u.ID equals r.Author.ID
+            select u;
+        return query.DistinctBy(u => u.ID).ToList();;
     }
 
     public Dictionary<int, User> GetUsersDictionary()
@@ -104,11 +104,16 @@ class BusinessLogic
 
     public List<User> GetUsersPage(int pageSize, int pageIndex)
     {
+        if (pageSize <= 0)
+            throw new ArgumentOutOfRangeException(nameof(pageSize));
+        if (pageIndex <= 0)
+            throw new ArgumentOutOfRangeException(nameof(pageIndex));
+        int skipCount = pageSize * (pageIndex - 1);
         var query = (from u in users
-                    orderby u.ID
-                    select u)
-                    .Skip(pageSize * pageIndex)
-                    .Take(pageSize);
+                orderby u.ID
+                select u)
+            .Skip(skipCount)
+            .Take(pageSize);
         return query.ToList();
     }
 }
